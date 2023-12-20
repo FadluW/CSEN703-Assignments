@@ -43,18 +43,24 @@ def sequenceAlignment(seq1: str, seq2: str, scoring: np.ndarray):
 
     # Initialize sequence alignment score table to memorize in
     SAS = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        SAS[i][0] = scoringMatrix.getScore(seq1[i - 1], "DASH")
+
+    for j in range(1, n + 1):
+        SAS[0][j] = scoringMatrix.getScore(seq2[j - 1], "DASH")
 
     for i in range(1, m + 1):
         for j in range(1, n + 1):
             match_score = scoringMatrix.getScore(seq1[i - 1], seq2[j - 1])
 
             SAS[i][j] = max(
-                SAS[i - 1][j - 1] + match_score,  # Match or mismatch
-                SAS[i - 1][j] + scoringMatrix.getScore(seq1[i - 1], "DASH"),  # Gap in sequence 2
-                SAS[i][j - 1] + scoringMatrix.getScore("DASH", seq2[j - 1])  # Gap in sequence 1
+                round(SAS[i - 1][j - 1] + match_score, 1),  # Match or mismatch
+                round(SAS[i - 1][j] + scoringMatrix.getScore(seq1[i - 1], "DASH"), 1),  # Gap in sequence 2
+                round(SAS[i][j - 1] + scoringMatrix.getScore("DASH", seq2[j - 1]), 1)  # Gap in sequence 1
             )
 
     printEnd(SAS[m][n])
+    print(np.array(SAS))
     return SAS[m][n]
 
 
