@@ -1,9 +1,14 @@
 # Import libraries
 import numpy as np
-import pandas as pd
+import matplotlib.pyplot as plt
+import random
+import time
 from ScoringMatrix import ScoringMatrix
 
 def main():
+    plot = False
+    if (plot): return testPlot()
+
     seq1 = "ATGCC"
     seq2 = "TACGCA"
     matrixArr = [[1, -0.8, -0.2, -2.3, -0.6],
@@ -12,8 +17,8 @@ def main():
                  [-2.3, -0.7, -0.5, 1, -1],
                  [-0.6, -1.5, -0.9, -1, 0]]
     scoringMatrix = np.array(matrixArr)
-    
-    sequenceAlignment(seq1, seq2, scoringMatrix)
+
+    sequenceAlignment(seq1, seq2, scoringMatrix, True)
 
 
 def validateScoringMatrix(matrix: np.ndarray):
@@ -23,9 +28,9 @@ def validateScoringMatrix(matrix: np.ndarray):
     return True
 
 
-def sequenceAlignment(seq1: str, seq2: str, scoring: np.ndarray):
+def sequenceAlignment(seq1: str, seq2: str, scoring: np.ndarray, printing: bool):
     if (not validateScoringMatrix(scoring)):
-        print("Invalid Scoring Matrix")
+        printing("Invalid Scoring Matrix")
         return
     
     # Keep seq1 as the longer one
@@ -34,7 +39,7 @@ def sequenceAlignment(seq1: str, seq2: str, scoring: np.ndarray):
         seq1 = seq2
         seq2 = temp
 
-    printStart(seq1, seq2, scoring)
+    if printing: printStart(seq1, seq2, scoring)
 
     scoringMatrix = ScoringMatrix(scoring)
     
@@ -59,8 +64,9 @@ def sequenceAlignment(seq1: str, seq2: str, scoring: np.ndarray):
                 round(SAS[i][j - 1] + scoringMatrix.getScore("DASH", seq2[j - 1]), 1)  # Gap in sequence 1
             )
 
-    printEnd(SAS[m][n])
-    print(np.array(SAS))
+    if printing: 
+        printEnd(SAS[m][n])
+        print(np.array(SAS))
     return SAS[m][n]
 
 
@@ -74,6 +80,38 @@ def printStart(seq1: str, seq2: str, scoring: np.ndarray):
 def printEnd(score):
     print("\nAlignment found with score: ", score)
     print("\n\n==============================\n")
+
+
+def generateSequence(length: int):
+    seq = [randChar() * length]
+    return ''.join(seq)
+
+
+def randChar():
+    return "AGTC"[random.randint(0, 3)]
+
+
+def testPlot():
+    matrixArr = [[1, -0.8, -0.2, -2.3, -0.6],
+                 [-0.8, 1, -1.1, -0.7, -1.5],
+                 [-0.2, -1.1, 1, -0.5, -0.9],
+                 [-2.3, -0.7, -0.5, 1, -1],
+                 [-0.6, -1.5, -0.9, -1, 0]]
+    scoringMatrix = np.array(matrixArr)
+    
+    ax = plt.subplot()
+    for i in range(10, 100):
+        seq1 = generateSequence(i)
+        for j in range(10, 20):
+            seq2 = generateSequence(j)
+            
+            startTime = time.time()
+            sequenceAlignment(seq1, seq2, scoringMatrix, False)
+            timeElapsed = time.time() - startTime
+
+            ax.scatter(i * j, timeElapsed)
+    
+    plt.show()
 
 
 if __name__ == "__main__":
